@@ -27,7 +27,7 @@ HJJ : 红晋江 http://bbs.jjwxc.net
     tiezi_query_to_json.pl HJJ 153 贴子主题 迷侠
     
     #取出红晋江版块153的贴子（超出15个则停止），只看楼主，且跟贴内容不能少于100字 
-    tiezi_to_any.pl -b 'http://bbs.jjwxc.net/showmsg.php?board=153&page=1' -o "-p 15" -t "tiezi_to_html.pl -u '{url}' -U 1 -C 100"
+    tiezi_to_any.pl -b 'http://bbs.jjwxc.net/board.php?board=153&page=1' -o "-p 2" -t "tiezi_to_html.pl -u '{url}' -U 1 -C 100"
 =cut
 
 use strict;

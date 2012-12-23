@@ -8,7 +8,7 @@
 =head1 USAGE
 
     #取出指定帖子，只看楼主，且跟帖内容不能少于100字 
-    tiezi_to_any.pl -b 'http://bbs.jjwxc.net/showmsg.php?board=153&page=1' -o "-p 15" -t "tiezi_to_html.pl -u '{url}' -U 1 -C 100"
+    tiezi_to_any.pl -b 'http://bbs.jjwxc.net/board.php?board=153&page=1' -o "-p 2" -t "tiezi_to_html.pl -u '{url}' -U 1 -C 100"
 
 =head1 OPTIONS
 
@@ -37,19 +37,19 @@ use Getopt::Std;
 $| = 1;
 
 my %opt;
-getopt( 'bskvmt', \%opt );
+getopt( 'bsomt', \%opt );
 
 
-my $cmd = $opt{b} ? qq[tiezi_board_to_json.pl $opt{b} $opt{o}] : qq[tiezi_query_to_json.pl $opt{s} $opt{o}];
+my $cmd = $opt{b} ? qq[tiezi_board_to_json.pl -u '$opt{b}' $opt{o}] : qq[tiezi_query_to_json.pl $opt{s} $opt{o}];
 
 print $cmd;
 my $json = `$cmd`;
 my $info = decode_json( $json );
 
 my $select = $opt{m} ? select_book($info) : $info; 
-print $_->[2],"\n" for @$select;
+print $_->{url},"\n" for @$select;
 for my $r (@$select){
-    my $u = $r->[1];
+    my $u = $r->{url};
     my $c = $opt{t};
     $c=~s/{url}/$u/;
     system($c);
@@ -76,7 +76,7 @@ sub select_book {
     for my $item ( &Menu( \%menu ) ) {
         $item = decode( locale => $item );
         my ( $i, $t ) = ( $item =~ /^(.*) --- (.*)$/ );
-        push @select_result, [ $t, $select{$item} ];
+        push @select_result, { url =>  $select{$item} };
     }
 
     return \@select_result;
