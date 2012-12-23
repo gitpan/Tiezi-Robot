@@ -1,11 +1,11 @@
-#  ABSTRACT: 帖子下载器
+# ABSTRACT: 贴子下载器
 =pod
 
 =encoding utf8
 
 =head1 NAME
 
-Tiezi::Robot - 帖子下载器
+Tiezi::Robot - 贴子下载器
 
 =head2 支持站点
 
@@ -17,8 +17,17 @@ HJJ : 红晋江 http://bbs.jjwxc.net
 
 =head1 EXAMPLE
 
-get_tiezi_to_html.pl -u http://bbs.jjwxc.net/showmsg.php?board=153&id=57 -U -C 100
+    #取出指定贴子，只看楼主，且跟贴内容不能少于100字 
+    tiezi_to_html.pl -u 'http://bbs.jjwxc.net/showmsg.php?board=153&id=57' -U 1 -C 100
 
+    #按版块取出贴子URL信息，超出50贴或超出3页就停止
+    tiezi_board_to_json.pl -u 'http://bbs.jjwxc.net/board.php?board=153&page=1' -t 50 p 3 
+    
+    #在红晋江 第 153 版块 查询主题 为 迷侠 的贴子
+    tiezi_query_to_json.pl HJJ 153 贴子主题 迷侠
+    
+    #取出红晋江版块153的贴子（超出15个则停止），只看楼主，且跟贴内容不能少于100字 
+    tiezi_to_any.pl -b 'http://bbs.jjwxc.net/showmsg.php?board=153&page=1' -o "-p 15" -t "tiezi_to_html.pl -u '{url}' -U 1 -C 100"
 =cut
 
 use strict;
@@ -101,6 +110,64 @@ sub get_tiezi_ref {
 
     return \%result;
 } ## end sub get_tiezi_ref
+
+sub get_board_ref {
+    my ( $self, $url , $return_sub ) = @_;
+    
+    $self->set_site_by_url($url);
+
+    my $html_ref = $self->{browser}->get_url_ref( $url );
+    return unless $html_ref;
+    
+    my %result;
+    
+    $result{topic} = $self->{parser}->parse_board_topic($html_ref);
+    $result{subboards}          = $self->{parser}->parse_board_subboards($html_ref);
+    $result{tiezis} = $self->{parser}->parse_board_tiezis($html_ref);
+    
+    $result{parsed_board_page_num} = 1;
+    $result{parsed_tiezi_url_num} = scalar(@{$result{tiezis}});
+    
+    my $result_urls_ref = $self->{parser}->parse_board_urls($html_ref);
+    return $result{tiezis} unless ( defined $result_urls_ref );
+
+    for my $u (@$result_urls_ref) {
+        my $h = $self->{browser}->get_url_ref($u);
+        my $r = $self->{parser}->parse_board_tiezis($h);
+        push @{$result{tiezis}} , @$r;
+        
+        $result{parsed_board_page_num}++;
+        $result{parsed_tiezi_url_num} = scalar(@{$result{tiezis}});
+        return $result{tiezis} if($return_sub and $return_sub->(\%result));
+    }
+    
+    return $result{tiezis};
+} ## end sub get_board_ref
+
+sub get_query_ref {
+    my ( $self, @args) = @_;
+    
+    $args[-1] = encode( $self->{parser}->charset, $args[-1] );
+    my ( $url, $post_vars ) = $self->{parser}->make_query_url( @args );
+    
+    my $html_ref = $self->{browser}->get_url_ref( $url, $post_vars );
+    return unless $html_ref;
+
+    my $result          = $self->{parser}->parse_query($html_ref);
+    my $result_urls_ref = $self->{parser}->get_query_result_urls($html_ref);
+    return $result unless ( defined $result_urls_ref );
+
+    my $i=0;
+    for my $url (@$result_urls_ref) {
+        my $h = $self->{browser}->get_url_ref($url);
+        my $r = $self->{parser}->parse_query($h);
+        push @$result, @$r;
+        $i++;
+        last if($i>2);
+    }
+
+    return $result;
+} ## end sub get_query_ref
 
 no Moo;
 

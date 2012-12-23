@@ -3,6 +3,9 @@ MANIFEST
 META.yml
 Makefile.PL
 README
-bin/get_tiezi_to_html.pl
+bin/tiezi_board_to_json.pl
+bin/tiezi_query_to_json.pl
+bin/tiezi_to_any.pl
+bin/tiezi_to_html.pl
 dist.ini
 lib/Tiezi/Robot.pm

@@ -1,5 +1,5 @@
 ---
-abstract: 帖子下载器
+abstract: 贴子下载器
 author:
   - 'abbypan <abbypan@gmail.com>'
 build_requires: {}
@@ -14,7 +14,9 @@ meta-spec:
 name: Tiezi-Robot
 requires:
   Encode::Locale: 1.03
+  JSON: 2.53
   Moo: 1.000007
-  Novel::Robot::Browser: 0.02
-  Tiezi::Robot::Parser: 0.02
-version: 0.02
+  Novel::Robot::Browser: 0.03
+  Term::Menus: 2.21
+  Tiezi::Robot::Parser: 0.03
+version: 0.03

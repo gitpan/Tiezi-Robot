@@ -1,8 +1,5 @@
 #!/usr/bin/perl 
-#===============================================================================
-#  DESCRIPTION: 下载帖子，存成html
-#       AUTHOR: Abby Pan (abbypan@gmail.com), USTC 
-#===============================================================================
+# ABSTRACT: 下载帖子，存成html
 
 =pod
 
@@ -10,7 +7,8 @@
 
 =head1 USAGE
 
-get_tiezi_to_html.pl -u 'http://bbs.jjwxc.net/showmsg.php?board=153&id=57' -U 1 -C 100
+    #取出指定帖子，只看楼主，且跟帖内容不能少于100字 
+    tiezi_to_html.pl -u 'http://bbs.jjwxc.net/showmsg.php?board=153&id=57' -U 1 -C 100
 
 =head1 OPTIONS
 
@@ -127,12 +125,12 @@ __CSS__
 
 sub generate_toc {
     my ($r) = @_;
-    my $toc=qq`<li><a href="#toc0">$r->{topic}{title}</a></li>\n`;
+    my $toc=qq`<li><a href="#toc0">$r->{topic}{title} $r->{topic}{time} $r->{topic}{name}</a></li>\n`;
 for my $i (0 .. $#{$tz->{floors}}){
     my $f = $tz->{floors}[$i];
     next unless(select_floor($f, $r->{topic}, \%OPT));
     my $id = $f->{id} || ($i+1);
-    $toc.=qq`<li><a href="#toc$id">$f->{title}</a></li>\n`;
+    $toc.=qq`<li><a href="#toc$id">$f->{title} $f->{time} $f->{name}</a></li>\n`;
     }
     return $toc;
 }

@@ -9,7 +9,7 @@ use ExtUtils::MakeMaker 6.30;
 
 
 my %WriteMakefileArgs = (
-  "ABSTRACT" => "\345\270\226\345\255\220\344\270\213\350\275\275\345\231\250",
+  "ABSTRACT" => "\350\264\264\345\255\220\344\270\213\350\275\275\345\231\250",
   "AUTHOR" => "abbypan <abbypan\@gmail.com>",
   "BUILD_REQUIRES" => {},
   "CONFIGURE_REQUIRES" => {
@@ -17,17 +17,22 @@ my %WriteMakefileArgs = (
   },
   "DISTNAME" => "Tiezi-Robot",
   "EXE_FILES" => [
-    "bin/get_tiezi_to_html.pl"
+    "bin/tiezi_board_to_json.pl",
+    "bin/tiezi_to_html.pl",
+    "bin/tiezi_to_any.pl",
+    "bin/tiezi_query_to_json.pl"
   ],
   "LICENSE" => "perl",
   "NAME" => "Tiezi::Robot",
   "PREREQ_PM" => {
     "Encode::Locale" => "1.03",
+    "JSON" => "2.53",
     "Moo" => "1.000007",
-    "Novel::Robot::Browser" => "0.02",
-    "Tiezi::Robot::Parser" => "0.02"
+    "Novel::Robot::Browser" => "0.03",
+    "Term::Menus" => "2.21",
+    "Tiezi::Robot::Parser" => "0.03"
   },
-  "VERSION" => "0.02",
+  "VERSION" => "0.03",
   "test" => {
     "TESTS" => ""
   }
