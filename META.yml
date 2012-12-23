@@ -19,4 +19,4 @@ requires:
   Novel::Robot::Browser: 0.03
   Term::Menus: 2.21
   Tiezi::Robot::Parser: 0.03
-version: 0.04
+version: 0.05

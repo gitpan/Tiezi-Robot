@@ -28,6 +28,9 @@ HJJ : 红晋江 http://bbs.jjwxc.net
     
     #取出红晋江版块153的贴子（超出15个则停止），只看楼主，且跟贴内容不能少于100字 
     tiezi_to_any.pl -b 'http://bbs.jjwxc.net/board.php?board=153&page=1' -o "-p 2" -t "tiezi_to_html.pl -u '{url}' -U 1 -C 100"
+    
+    #取出红晋江版块153中主题出现“迷侠记[初版]”的贴子，进行手动选择，然后存成html（只看楼主，且跟帖内容不能少于100字）
+    tiezi_to_any.pl -s HJJ -o "153 贴子主题 迷侠记[初版]" -t "tiezi_to_html.pl -u '{url}' -U 1 -C 100" -m 1
 =cut
 
 use strict;
