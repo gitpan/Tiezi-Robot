@@ -1,9 +1,8 @@
-Changes
-lib/Tiezi/Robot.pm
+LICENSE
+MANIFEST
+META.yml
 Makefile.PL
-MANIFEST			This list of files
 README
-t/00-load.t
-t/manifest.t
-t/pod-coverage.t
-t/pod.t
+bin/get_tiezi_to_html.pl
+dist.ini
+lib/Tiezi/Robot.pm

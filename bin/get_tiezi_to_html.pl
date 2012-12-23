@@ -3,10 +3,14 @@
 #  DESCRIPTION: 下载帖子，存成html
 #       AUTHOR: Abby Pan (abbypan@gmail.com), USTC 
 #===============================================================================
+
 =pod
+
+=encoding utf8
+
 =head1 USAGE
 
-get_tiezi_to_html.pl -u http://bbs.jjwxc.net/showmsg.php?board=153&id=57 -U -C 100
+get_tiezi_to_html.pl -u 'http://bbs.jjwxc.net/showmsg.php?board=153&id=57' -U 1 -C 100
 
 =head1 OPTIONS
 
@@ -21,6 +25,7 @@ get_tiezi_to_html.pl -u http://bbs.jjwxc.net/showmsg.php?board=153&id=57 -U -C 1
 -U : 只看楼主(默认是取出所有楼层，不只楼主)
 
 -C : 跟帖内容不能少于多少字
+
 =cut
 
 use strict;

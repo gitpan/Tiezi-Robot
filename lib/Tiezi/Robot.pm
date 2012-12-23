@@ -1,8 +1,7 @@
-#===============================================================================
-#  DESCRIPTION: 帖子下载器
-#       AUTHOR: Abby Pan (USTC), abbypan@gmail.com
-#      CREATED: 2012年12月22日 23时36分55秒
-#===============================================================================
+#  ABSTRACT: 帖子下载器
+=pod
+
+=encoding utf8
 
 =head1 NAME
 
@@ -28,18 +27,12 @@ use warnings;
 package Tiezi::Robot;
 
 use 5.006;
-use strict;
-use warnings;
 use utf8;
-
-
-our $VERSION = '0.01';
 
 use Encode;
 use Moo;
-
 use Novel::Robot::Browser;
-use Tiezi::Robot::Parser::HJJ; 
+use Tiezi::Robot::Parser; 
 
 has browser => ( is => 'rw', 
     default => sub {
@@ -55,26 +48,33 @@ has site => (
 );
 
 has parser => (
-    is => 'rw', 
-    lazy => 1, 
-    default => \&set_site, 
+    is      => 'rw',
+    default => sub {
+        my ($self) = @_;
+        my $parser_base = new Tiezi::Robot::Parser();
+        my $parser = $parser_base->init_parser('Base');
+        return $parser;
+    },
 );
 
 sub set_site {
-        my ($self, $site) = @_;
-        $self->{site} = $site if($site);
-        $self->{parser_list}{$self->{site}} //= eval qq[new Tiezi::Robot::Parser::$self->{site}()];
-        $self->{parser}  = $self->{parser_list}{$self->{site}};
-}
+    my ( $self, $site ) = @_;
+    $self->{site} = $site if ($site);
+    unless($self->{parser_list}{ $self->{site} }){
+        my $parser_base = new Tiezi::Robot::Parser();
+        $self->{parser_list}{ $self->{site} }
+        = $parser_base->init_parser($self->{site});
+    }
+    $self->{parser} = $self->{parser_list}{ $self->{site} };
+} ## end sub set_site
 
 sub set_site_by_url {
-        my ($self, $url) = @_;
+    my ( $self, $url ) = @_;
 
-        my $site = ($url=~m#^http://bbs\.jjwxc\.net/#) ? 'HJJ'  : 
-        '';
-
-        $self->set_site($site) if(! $self->{site} or $self->{site} ne $site);
-}
+    my $site = $self->{parser}->detect_site_by_url($url);
+    
+    $self->set_site($site) if ( !$self->{site} or $self->{site} ne $site );
+} ## end sub set_site_by_url
 
 sub get_tiezi_ref {
     my ( $self, $url ) = @_;
