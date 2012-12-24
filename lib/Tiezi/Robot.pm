@@ -18,19 +18,25 @@ HJJ : 红晋江 http://bbs.jjwxc.net
 =head1 EXAMPLE
 
     #取出指定贴子，只看楼主，且跟贴内容不能少于100字 
-    tiezi_to_html.pl -u 'http://bbs.jjwxc.net/showmsg.php?board=153&id=57' -U 1 -C 100
+
+    tiezi_to_html.pl -u "http://bbs.jjwxc.net/showmsg.php?board=153&id=57" -U 1 -C 100
 
     #按版块取出贴子URL信息，超出50贴或超出3页就停止
-    tiezi_board_to_json.pl -u 'http://bbs.jjwxc.net/board.php?board=153&page=1' -t 50 p 3 
+
+    tiezi_board_to_json.pl -u "http://bbs.jjwxc.net/board.php?board=153&page=1" -t 50 -p 3 
     
     #在红晋江 第 153 版块 查询主题 为 迷侠 的贴子
+
     tiezi_query_to_json.pl HJJ 153 贴子主题 迷侠
     
-    #取出红晋江版块153的贴子（超出15个则停止），只看楼主，且跟贴内容不能少于100字 
-    tiezi_to_any.pl -b 'http://bbs.jjwxc.net/board.php?board=153&page=1' -o "-p 2" -t "tiezi_to_html.pl -u '{url}' -U 1 -C 100"
+    #取出红晋江版块153的贴子（超出15个则停止），手动选择贴子后，自动保存为html，只看楼主，且跟贴内容不能少于100字
+
+    tiezi_to_any.pl -b "http://bbs.jjwxc.net/board.php?board=153&page=1" -o "-t 15" -t "tiezi_to_html.pl -u \"{url}\" -U 1 -C 100" -m 1
     
     #取出红晋江版块153中主题出现“迷侠记[初版]”的贴子，进行手动选择，然后存成html（只看楼主，且跟帖内容不能少于100字）
-    tiezi_to_any.pl -s HJJ -o "153 贴子主题 迷侠记[初版]" -t "tiezi_to_html.pl -u '{url}' -U 1 -C 100" -m 1
+
+    tiezi_to_any.pl -s HJJ -o "153 贴子主题 迷侠记[初版]" -t "tiezi_to_html.pl -u \"{url}\" -U 1 -C 100" -m 1
+
 =cut
 
 use strict;

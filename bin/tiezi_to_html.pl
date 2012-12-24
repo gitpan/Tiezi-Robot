@@ -8,7 +8,8 @@
 =head1 USAGE
 
     #取出指定帖子，只看楼主，且跟帖内容不能少于100字 
-    tiezi_to_html.pl -u 'http://bbs.jjwxc.net/showmsg.php?board=153&id=57' -U 1 -C 100
+
+    tiezi_to_html.pl -u "http://bbs.jjwxc.net/showmsg.php?board=153&id=57" -U 1 -C 100
 
 =head1 OPTIONS
 

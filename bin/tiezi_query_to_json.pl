@@ -6,8 +6,17 @@
 
 =head1 USAGE
 
-    #在红晋江 第 153 版块 查询主题 为 迷侠 的贴子
+    #红晋江 四面无风版块ID为 153，在此版块进行查询
+
     tiezi_query_to_json.pl HJJ 153 贴子主题 迷侠
+
+    tiezi_query_to_json.pl HJJ 153 主题贴内容 无风
+
+    tiezi_query_to_json.pl HJJ 153 主题贴发贴人 定柔
+
+    tiezi_query_to_json.pl HJJ 153 跟贴内容 无风
+
+    tiezi_query_to_json.pl HJJ 153 跟贴发贴人 定柔
 
 =cut
 

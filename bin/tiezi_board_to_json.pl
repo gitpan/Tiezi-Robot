@@ -12,15 +12,15 @@
 
     #取出贴子URL信息，超出50贴就停止
 
-    tiezi_board_to_json.pl -u 'http://bbs.jjwxc.net/board.php?board=3&page=1' -t 50 
+    tiezi_board_to_json.pl -u "http://bbs.jjwxc.net/board.php?board=3&page=1" -t 50 
 
     #取出贴子URL信息，超出3页就停止
 
-    tiezi_board_to_json.pl -u 'http://bbs.jjwxc.net/board.php?board=3&page=1' -p 3 
+    tiezi_board_to_json.pl -u "http://bbs.jjwxc.net/board.php?board=3&page=1" -p 3 
     
     #取出贴子URL信息，超出50贴或超出3页就停止
     
-    tiezi_board_to_json.pl -u 'http://bbs.jjwxc.net/board.php?board=3&page=1' -t 50 p 3 
+    tiezi_board_to_json.pl -u "http://bbs.jjwxc.net/board.php?board=3&page=1" -t 50 p 3 
 
 =cut
 
