@@ -17,10 +17,8 @@ my %WriteMakefileArgs = (
   },
   "DISTNAME" => "Tiezi-Robot",
   "EXE_FILES" => [
-    "bin/tiezi_board_to_json.pl",
-    "bin/tiezi_to_html.pl",
     "bin/tiezi_to_any.pl",
-    "bin/tiezi_query_to_json.pl"
+    "bin/tiezi_to_html.pl"
   ],
   "LICENSE" => "perl",
   "NAME" => "Tiezi::Robot",
@@ -28,11 +26,12 @@ my %WriteMakefileArgs = (
     "Encode::Locale" => "1.03",
     "JSON" => "2.53",
     "Moo" => "1.000007",
-    "Novel::Robot::Browser" => "0.03",
+    "Novel::Robot::Browser" => "0.06",
     "Term::Menus" => "2.21",
-    "Tiezi::Robot::Parser" => "0.04"
+    "Tiezi::Robot::Packer" => "0.01",
+    "Tiezi::Robot::Parser" => "0.05"
   },
-  "VERSION" => "0.07",
+  "VERSION" => "0.08",
   "test" => {
     "TESTS" => ""
   }

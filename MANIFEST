@@ -3,8 +3,7 @@ MANIFEST
 META.yml
 Makefile.PL
 README
-bin/tiezi_board_to_json.pl
-bin/tiezi_query_to_json.pl
+README.md
 bin/tiezi_to_any.pl
 bin/tiezi_to_html.pl
 dist.ini

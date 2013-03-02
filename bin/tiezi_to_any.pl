@@ -1,89 +1,81 @@
 #!/usr/bin/perl 
-#  ABSTRACT:  指定条件，TERM下面选择下载帖子
 
 =pod
 
 =encoding utf8
 
+=head1 DESC
+
+    TERM下面选择下载贴子
+
+=head1 EXAMPLE
+
+    tiezi_to_any.pl -b "http://bbs.jjwxc.net/showmsg.php?board=153&id=57" -m 1 -t HTML
+
+    tiezi_to_any.pl -s HJJ -b 153 -q 主题贴发贴人 -v 定柔 -m 1
+    
 =head1 USAGE
 
-    #取出指定帖子，手动选择，只看楼主，且跟帖内容不能少于100字 
+    tiezi_to_any.pl -b [board_url] -m [select_menu_or_not] -t [packer_type]
 
-    tiezi_to_any.pl -b "http://bbs.jjwxc.net/board.php?board=153&page=1" -o "-p 2" -t "tiezi_to_html.pl -u \"{url}\" -U 1 -C 100" -m 1
-
-    #取出指定帖子，手动选择，只看楼主，且跟帖内容不能少于100字 
-
-    tiezi_to_any.pl -s HJJ -o "153 贴子主题 迷侠记[初版]" -t "tiezi_to_html.pl -u \"{url}\" -U 1 -C 100" -m 1
+    tiezi_to_any.pl -s [site] -b [board_url/board_num] -q [query_keyword] -v [query_value] -m [select_menu_or_not] -t [packer_type]
 
 =head1 OPTIONS
 
--b : board
+    -b : 版块URL
 
--s(query) : site
+    -s : 指定查询的站点
+    -q : 查询的类型
+    -v : 查询的关键字
 
--o : board option / query keyword
+    -m : 是否输出贴子选择菜单
 
--m : select menu
-
--t : to html / ...
+    -t : 贴子保存类型，例如HTML/TXT
 
 =cut
 
 use strict;
 use warnings;
 use utf8;
-use JSON;
+
 use Encode::Locale;
 use Encode;
-use Term::Menus;
-
 use Getopt::Std;
+use Tiezi::Robot;
 
 $| = 1;
 
 my %opt;
-getopt( 'bsomt', \%opt );
+getopt( 'bsqvmt', \%opt );
 
+my $xs = Tiezi::Robot->new();
+$xs->set_packer( $opt{t} || 'HTML' );
+$xs->set_parser( $opt{s} || $opt{b} );
 
-my $cmd = $opt{b} ? qq[tiezi_board_to_json.pl -u '$opt{b}' $opt{o}] : qq[tiezi_query_to_json.pl $opt{s} $opt{o}];
+my $tiezis_ref;
 
-print $cmd;
-my $json = `$cmd`;
-my $info = decode_json( $json );
-
-my $select = $opt{m} ? select_book($info) : $info; 
-print $_->{url},"\n" for @$select;
-for my $r (@$select){
-    my $u = $r->{url};
-    my $c = $opt{t};
-    $c=~s/{url}/$u/;
-    system($c);
+if ( $opt{q} ) {
+    my $query_data = {
+        type    => decode( locale => $opt{q} ),
+        keyword => decode( locale => $opt{v} ),
+    };
+    $query_data->{board} = decode( locale => $opt{b} ) if ( $opt{b} );
+    my $query_ref = $xs->get_query_ref( $query_data, \&return_sub );
+    $tiezis_ref = $query_ref->{tiezis};
+} ## end if ( $opt{q} )
+elsif ( $opt{b} ) {
+    my $board_ref = $xs->get_board_ref( $opt{b}, \&return_sub );
+    $tiezis_ref = $board_ref->{tiezis};
 }
 
-sub select_book {
-    my ($info_ref ) = @_;
+my $select = $opt{m} ? $xs->select_tiezi($tiezis_ref) : $tiezis_ref;
+for my $r (@$select) {
+    my $u = $r->{url};
+    next unless ($u);
+    $xs->get_tiezi($u);
+}
 
-    my %menu = ( 'Select' => 'Many', 'Banner' => 'Tiezi List', );
-
-    #菜单项，不搞层次了，恩
-    my %select;
-    my $i = 1;
-    for my $r (@$info_ref) {
-        my $item = "$i --- $r->{title}";
-        $select{$item} = $r->{url};
-        $item = encode( locale => $item );
-        $menu{"Item_$i"} = { Text => $item };
-        $i++;
-    } ## end for my $r (@$info_ref)
-
-    #最后选出来的小说
-    my @select_result;
-    for my $item ( &Menu( \%menu ) ) {
-        $item = decode( locale => $item );
-        my ( $i, $t ) = ( $item =~ /^(.*) --- (.*)$/ );
-        push @select_result, { url =>  $select{$item} };
-    }
-
-    return \@select_result;
-
-} ## end sub select_book
+sub return_sub {
+    my ($r) = @_;
+    return 1 if ( $r->{tiezi_num} > 20 );
+}

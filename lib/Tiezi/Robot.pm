@@ -23,26 +23,20 @@ HJJ : 红晋江 http://bbs.jjwxc.net
 
     #按版块取出贴子URL信息，超出50贴或超出3页就停止
 
-    tiezi_board_to_json.pl -u "http://bbs.jjwxc.net/board.php?board=153&page=1" -t 50 -p 3 
+    tiezi_to_any.pl -b "http://bbs.jjwxc.net/board.php?board=153&page=1" -t 50 -p 3 
     
     #在红晋江 第 153 版块 查询主题 为 迷侠 的贴子
 
-    tiezi_query_to_json.pl HJJ 153 贴子主题 迷侠
+    tiezi_to_any.pl -s HJJ -b 153 -q 贴子主题 -v 迷侠 -m 1
     
-    #取出红晋江版块153的贴子（超出15个则停止），手动选择贴子后，自动保存为html，只看楼主，且跟贴内容不能少于100字
-
-    tiezi_to_any.pl -b "http://bbs.jjwxc.net/board.php?board=153&page=1" -o "-t 15" -t "tiezi_to_html.pl -u \"{url}\" -U 1 -C 100" -m 1
-    
-    #取出红晋江版块153中主题出现“迷侠记[初版]”的贴子，进行手动选择，然后存成html（只看楼主，且跟帖内容不能少于100字）
-
-    tiezi_to_any.pl -s HJJ -o "153 贴子主题 迷侠记[初版]" -t "tiezi_to_html.pl -u \"{url}\" -U 1 -C 100" -m 1
-
 =cut
 
 use strict;
 use warnings;
  
 package Tiezi::Robot;
+
+our $VERSION=0.08;
 
 use 5.006;
 use utf8;
@@ -51,6 +45,8 @@ use Encode;
 use Moo;
 use Novel::Robot::Browser;
 use Tiezi::Robot::Parser; 
+use Tiezi::Robot::Packer; 
+use Term::Menus;
 
 has browser => ( is => 'rw', 
     default => sub {
@@ -60,45 +56,77 @@ has browser => ( is => 'rw',
     },
 );
 
-has site => (
-    is => 'rw', 
-    default => sub { '' }, 
-);
-
-has parser => (
-    is      => 'rw',
+has parser_base => (
+    is      => 'ro',
     default => sub {
         my ($self) = @_;
         my $parser_base = new Tiezi::Robot::Parser();
-        my $parser = $parser_base->init_parser('Base');
-        return $parser;
+        return $parser_base;
     },
 );
 
-sub set_site {
-    my ( $self, $site ) = @_;
-    $self->{site} = $site if ($site);
-    unless($self->{parser_list}{ $self->{site} }){
-        my $parser_base = new Tiezi::Robot::Parser();
-        $self->{parser_list}{ $self->{site} }
-        = $parser_base->init_parser($self->{site});
-    }
-    $self->{parser} = $self->{parser_list}{ $self->{site} };
-} ## end sub set_site
+has parser => ( is => 'rw', );
 
-sub set_site_by_url {
-    my ( $self, $url ) = @_;
+has packer_base => (
+    is      => 'ro',
+    default => sub {
+        my ($self) = @_;
+        my $packer_base = new Tiezi::Robot::Packer();
+        return $packer_base;
+    },
+);
 
-    my $site = $self->{parser}->detect_site_by_url($url);
+has packer => ( is => 'rw', );
+
+sub set_parser {
+    my ( $self, $s, $o ) = @_;
+
+    $self->{parser} = $self->{parser_base}->init_parser( $s, $o );
+
+} ## end sub set_parser
+
+sub set_packer {
+    my ( $self, $s, $o ) = @_;
+
+    $self->{packer} = $self->{packer_base}->init_packer( $s, $o );
+
+} ## end sub set_packer
+
+sub get_tiezi {
+    my ( $self, $tz_url, $o ) = @_; 
+    $o ||= {}; 
+
+    my $tz = $self->get_tiezi_ref($tz_url);
+    return unless ($tz);
     
-    $self->set_site($site) if ( !$self->{site} or $self->{site} ne $site );
-} ## end sub set_site_by_url
+    #选取指定楼层
+    if($o->{skip_floor}){
+        for my $f (@{$tz->{floors}}){
+            $f->{skip} = $o->{skip_floor}->($tz, $f);
+        }
+    }
+
+    $self->{packer}->open_packer($tz);
+
+    $self->{packer}->format_before_toc($tz);
+    $self->{packer}->format_toc($tz);
+    $self->{packer}->format_after_toc($tz);
+
+    $self->{packer}->format_before_floor($tz);
+    for my $i (0 .. $#{$tz->{floors}}){
+        my $d = $tz->{floors}[$i];
+        next unless ($d);
+
+        $self->{packer}->format_floor( $d, $i+1 );
+    } ## end for my $i ( 1 .. $tz...)
+    $self->{packer}->format_after_floor($tz);
+
+    $self->{packer}->close_packer();
+}
 
 sub get_tiezi_ref {
     my ( $self, $url ) = @_;
     
-    $self->set_site_by_url($url);
-
     my $html_ref = $self->{browser}->get_url_ref( $url );
     return unless $html_ref;
     
@@ -123,9 +151,8 @@ sub get_tiezi_ref {
 sub get_board_ref {
     my ( $self, $url , $return_sub ) = @_;
     
-    $self->set_site_by_url($url);
-
     my $html_ref = $self->{browser}->get_url_ref( $url );
+    print "board : $url\n";
     return unless $html_ref;
     
     my %result;
@@ -134,49 +161,81 @@ sub get_board_ref {
     $result{subboards}          = $self->{parser}->parse_board_subboards($html_ref);
     $result{tiezis} = $self->{parser}->parse_board_tiezis($html_ref);
     
-    $result{parsed_board_page_num} = 1;
-    $result{parsed_tiezi_url_num} = scalar(@{$result{tiezis}});
+    $result{board_num} = 1;
+    $result{tiezi_num} = scalar(@{$result{tiezis}});
     
     my $result_urls_ref = $self->{parser}->parse_board_urls($html_ref);
-    return $result{tiezis} unless ( defined $result_urls_ref );
+    return \%result unless ( defined $result_urls_ref );
 
     for my $u (@$result_urls_ref) {
         my $h = $self->{browser}->get_url_ref($u);
         my $r = $self->{parser}->parse_board_tiezis($h);
         push @{$result{tiezis}} , @$r;
         
-        $result{parsed_board_page_num}++;
-        $result{parsed_tiezi_url_num} = scalar(@{$result{tiezis}});
-        return $result{tiezis} if($return_sub and $return_sub->(\%result));
+        $result{board_num}++;
+        $result{tiezi_num} = scalar(@{$result{tiezis}});
+        return \%result if($return_sub and $return_sub->(\%result));
     }
     
-    return $result{tiezis};
+    return \%result;
 } ## end sub get_board_ref
 
 sub get_query_ref {
-    my ( $self, @args) = @_;
+    my ( $self, $query, $return_sub) = @_;
     
-    $args[-1] = encode( $self->{parser}->charset, $args[-1] );
-    my ( $url, $post_vars ) = $self->{parser}->make_query_url( @args );
+    my ( $url, $post_vars ) = $self->{parser}->make_query_url( $query );
     
     my $html_ref = $self->{browser}->get_url_ref( $url, $post_vars );
     return unless $html_ref;
 
-    my $result          = $self->{parser}->parse_query($html_ref);
-    my $result_urls_ref = $self->{parser}->get_query_result_urls($html_ref);
-    return $result unless ( defined $result_urls_ref );
+    my %result;
+    $result{tiezis}          = $self->{parser}->parse_query($html_ref);
 
-    my $i=0;
+    my $result_urls_ref = $self->{parser}->get_query_result_urls($html_ref);
+    return \%result unless ( defined $result_urls_ref );
+
     for my $url (@$result_urls_ref) {
         my $h = $self->{browser}->get_url_ref($url);
         my $r = $self->{parser}->parse_query($h);
-        push @$result, @$r;
-        $i++;
-        last if($i>2);
+        push @{$result{tiezis}}, @$r;
+        
+        $result{query_num}++;
+        $result{tiezi_num} = scalar(@{$result{tiezis}});
+
+        return \%result if($return_sub and $return_sub->(\%result));
     }
 
-    return $result;
+    return \%result;
 } ## end sub get_query_ref
+
+sub select_tiezi {
+    my ($self, $info_ref) = @_;
+
+    my %menu = ( 'Select' => 'Many', 'Banner' => 'Book List', );
+
+    #菜单项，不搞层次了，恩
+    my %select;
+    my $i = 1;
+    for my $r (@$info_ref) {
+        my $url = $r->{url};
+        my $item = $r->{title};
+        $item.=" --- $r->{name}" if($r->{name});
+        $select{$item} = $r;
+        $item = encode( locale => $item );
+        $menu{"Item_$i"} = { Text => $item };
+        $i++;
+    } ## end for my $r (@$info_ref)
+
+    #最后选出来的小说
+    my @select_result;
+    for my $item ( &Menu( \%menu ) ) {
+        $item = decode( locale => $item );
+        push @select_result, $select{$item} ;
+    }
+
+    return \@select_result;
+
+} ## end sub select_book
 
 no Moo;
 
