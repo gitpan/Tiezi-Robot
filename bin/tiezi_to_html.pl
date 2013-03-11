@@ -52,7 +52,7 @@ print "\rget tiezi to html : $tiezi_url";
 my $xs = Tiezi::Robot->new();
 $xs->set_parser($OPT{s} || $tiezi_url) ;
 $xs->set_packer('HTML');
-$xs->get_tiezi($tiezi_url, { 'skip_floor' => sub { skip_floor(@_, \%OPT); }, });
+$xs->get_tiezi($tiezi_url, { 'skip_toc' => $OPT{T}, 'skip_floor' => sub { skip_floor(@_, \%OPT); }, });
 
 sub skip_floor {
     my ($t, $f, $o) = @_;

@@ -36,7 +36,7 @@ use warnings;
  
 package Tiezi::Robot;
 
-our $VERSION=0.08;
+our $VERSION=0.09;
 
 use 5.006;
 use utf8;
@@ -109,7 +109,9 @@ sub get_tiezi {
     $self->{packer}->open_packer($tz);
 
     $self->{packer}->format_before_toc($tz);
-    $self->{packer}->format_toc($tz);
+    unless($o->{skip_toc}){
+        $self->{packer}->format_toc($tz);
+    }
     $self->{packer}->format_after_toc($tz);
 
     $self->{packer}->format_before_floor($tz);

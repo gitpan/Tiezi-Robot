@@ -32,6 +32,9 @@
 
     -t : 贴子保存类型，例如HTML/TXT
 
+    -T : 生成的贴子不加楼层目录(默认是加楼层目录)
+    -U : 只看楼主(默认是取出所有楼层，不只楼主)
+    -C : 跟帖内容不能少于多少字
 =cut
 
 use strict;
@@ -46,7 +49,7 @@ use Tiezi::Robot;
 $| = 1;
 
 my %opt;
-getopt( 'bsqvmt', \%opt );
+getopt( 'bsqvmtTUC', \%opt );
 
 my $xs = Tiezi::Robot->new();
 $xs->set_packer( $opt{t} || 'HTML' );
@@ -72,10 +75,26 @@ my $select = $opt{m} ? $xs->select_tiezi($tiezis_ref) : $tiezis_ref;
 for my $r (@$select) {
     my $u = $r->{url};
     next unless ($u);
-    $xs->get_tiezi($u);
+    print "$u\n";
+#    $xs->get_tiezi($u);
+    $xs->get_tiezi($u, { 'skip_toc' => $opt{T}, 'skip_floor' => sub { skip_floor(@_, \%opt); }, });
 }
 
 sub return_sub {
     my ($r) = @_;
     return 1 if ( $r->{tiezi_num} > 20 );
+}
+
+sub skip_floor {
+    my ($t, $f, $o) = @_;
+
+    return 1 if(exists $o->{U} and $f->{name} ne $t->{topic}{name});
+
+    if($o->{C}){
+        my $c = $f->{content};
+        $c=~s/<.+?>//sg;
+        return 1 if(length($c) < $o->{C});    
+    }
+
+    return 0;
 }

@@ -31,7 +31,7 @@ my %WriteMakefileArgs = (
     "Tiezi::Robot::Packer" => "0.01",
     "Tiezi::Robot::Parser" => "0.05"
   },
-  "VERSION" => "0.08",
+  "VERSION" => "0.09",
   "test" => {
     "TESTS" => ""
   }

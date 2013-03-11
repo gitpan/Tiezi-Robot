@@ -20,4 +20,4 @@ requires:
   Term::Menus: 2.21
   Tiezi::Robot::Packer: 0.01
   Tiezi::Robot::Parser: 0.05
-version: 0.08
+version: 0.09
