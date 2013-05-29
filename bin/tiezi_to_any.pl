@@ -82,7 +82,8 @@ for my $r (@$select) {
 
 sub return_sub {
     my ($r) = @_;
-    return 1 if ( $r->{tiezi_num} > 20 );
+    #return 1 if ( $r->{tiezi_num} > 20 );
+    return;
 }
 
 sub skip_floor {

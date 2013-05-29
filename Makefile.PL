@@ -23,20 +23,34 @@ my %WriteMakefileArgs = (
   "LICENSE" => "perl",
   "NAME" => "Tiezi::Robot",
   "PREREQ_PM" => {
-    "Encode::Locale" => "1.03",
-    "JSON" => "2.53",
-    "Moo" => "1.000007",
-    "Novel::Robot::Browser" => "0.06",
-    "Term::Menus" => "2.21",
-    "Tiezi::Robot::Packer" => "0.01",
-    "Tiezi::Robot::Parser" => "0.05"
+    "Encode::Locale" => 0,
+    "JSON" => 0,
+    "Moo" => 0,
+    "Novel::Robot::Browser" => 0,
+    "Term::Menus" => 0,
+    "Tiezi::Robot::Packer" => 0,
+    "Tiezi::Robot::Parser" => 0
   },
-  "VERSION" => "0.09",
+  "TEST_REQUIRES" => {},
+  "VERSION" => "0.10",
   "test" => {
     "TESTS" => ""
   }
 );
 
+
+unless ( eval { ExtUtils::MakeMaker->VERSION(6.63_03) } ) {
+  my $tr = delete $WriteMakefileArgs{TEST_REQUIRES};
+  my $br = $WriteMakefileArgs{BUILD_REQUIRES};
+  for my $mod ( keys %$tr ) {
+    if ( exists $br->{$mod} ) {
+      $br->{$mod} = $tr->{$mod} if $tr->{$mod} > $br->{$mod};
+    }
+    else {
+      $br->{$mod} = $tr->{$mod};
+    }
+  }
+}
 
 unless ( eval { ExtUtils::MakeMaker->VERSION(6.56) } ) {
   my $br = delete $WriteMakefileArgs{BUILD_REQUIRES};

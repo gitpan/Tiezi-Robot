@@ -36,9 +36,8 @@ use warnings;
  
 package Tiezi::Robot;
 
-our $VERSION=0.09;
+our $VERSION=0.10;
 
-use 5.006;
 use utf8;
 
 use Encode;
@@ -97,7 +96,8 @@ sub get_tiezi {
     $o ||= {}; 
 
     my $tz = $self->get_tiezi_ref($tz_url);
-    return unless ($tz);
+    return unless ($tz and $tz->{topic} and $tz->{topic}{name} and $tz->{topic}{title});
+    $tz->{topic}{url} = $tz_url;
     
     #选取指定楼层
     if($o->{skip_floor}){
@@ -160,6 +160,7 @@ sub get_board_ref {
     my %result;
     
     $result{topic} = $self->{parser}->parse_board_topic($html_ref);
+
     $result{subboards}          = $self->{parser}->parse_board_subboards($html_ref);
     $result{tiezis} = $self->{parser}->parse_board_tiezis($html_ref);
     
@@ -170,12 +171,14 @@ sub get_board_ref {
     return \%result unless ( defined $result_urls_ref );
 
     for my $u (@$result_urls_ref) {
+        print "board : $u\n";
         my $h = $self->{browser}->get_url_ref($u);
         my $r = $self->{parser}->parse_board_tiezis($h);
         push @{$result{tiezis}} , @$r;
         
         $result{board_num}++;
         $result{tiezi_num} = scalar(@{$result{tiezis}});
+
         return \%result if($return_sub and $return_sub->(\%result));
     }
     
