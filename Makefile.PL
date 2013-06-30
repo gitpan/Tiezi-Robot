@@ -32,7 +32,7 @@ my %WriteMakefileArgs = (
     "Tiezi::Robot::Parser" => 0
   },
   "TEST_REQUIRES" => {},
-  "VERSION" => "0.10",
+  "VERSION" => "0.11",
   "test" => {
     "TESTS" => ""
   }

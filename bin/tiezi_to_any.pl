@@ -32,9 +32,21 @@
 
     -t : 贴子保存类型，例如HTML/TXT
 
-    -T : 生成的贴子不加楼层目录(默认是加楼层目录)
+
+    -M : 列表取 top n 页的贴子
+
+    -N : 列表取 top n 个贴子
+
+    -P : 贴子内容取 top n 页
+
+    -F : 贴子取 top n 楼
+
+    -W : 跟贴至少要 n 个字
+
     -U : 只看楼主(默认是取出所有楼层，不只楼主)
-    -C : 跟帖内容不能少于多少字
+
+    -T : 生成的贴子不加楼层目录(默认是加楼层目录)
+
 =cut
 
 use strict;
@@ -49,7 +61,7 @@ use Tiezi::Robot;
 $| = 1;
 
 my %opt;
-getopt( 'bsqvmtTUC', \%opt );
+getopt( 'bsqvmtPFWUT', \%opt );
 
 my $xs = Tiezi::Robot->new();
 $xs->set_packer( $opt{t} || 'HTML' );
@@ -63,11 +75,17 @@ if ( $opt{q} ) {
         keyword => decode( locale => $opt{v} ),
     };
     $query_data->{board} = decode( locale => $opt{b} ) if ( $opt{b} );
-    my $query_ref = $xs->get_query_ref( $query_data, \&return_sub );
+    my $query_ref = $xs->get_query_ref( $query_data, {
+            'max_page_num' => $opt{M}, 
+            'max_tiezi_num' => $opt{N}, 
+        });
     $tiezis_ref = $query_ref->{tiezis};
 } ## end if ( $opt{q} )
 elsif ( $opt{b} ) {
-    my $board_ref = $xs->get_board_ref( $opt{b}, \&return_sub );
+    my $board_ref = $xs->get_board_ref( $opt{b}, {
+            'max_page_num' => $opt{M}, 
+            'max_tiezi_num' => $opt{N}, 
+        });
     $tiezis_ref = $board_ref->{tiezis};
 }
 
@@ -76,26 +94,17 @@ for my $r (@$select) {
     my $u = $r->{url};
     next unless ($u);
     print "$u\n";
-#    $xs->get_tiezi($u);
-    $xs->get_tiezi($u, { 'skip_toc' => $opt{T}, 'skip_floor' => sub { skip_floor(@_, \%opt); }, });
+    $xs->get_tiezi($u, { 
+        'with_toc' => $opt{T} // 1, 
+        'only_poster' => $opt{U} // undef, 
+        'min_word_num' => $opt{W} // undef, 
+        'max_page_num' => $opt{P} // undef, 
+        'max_floor_num' => $opt{F} // undef,
+    });
 }
 
 sub return_sub {
     my ($r) = @_;
     #return 1 if ( $r->{tiezi_num} > 20 );
     return;
-}
-
-sub skip_floor {
-    my ($t, $f, $o) = @_;
-
-    return 1 if(exists $o->{U} and $f->{name} ne $t->{topic}{name});
-
-    if($o->{C}){
-        my $c = $f->{content};
-        $c=~s/<.+?>//sg;
-        return 1 if(length($c) < $o->{C});    
-    }
-
-    return 0;
 }
