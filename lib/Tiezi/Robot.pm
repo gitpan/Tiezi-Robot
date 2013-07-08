@@ -36,7 +36,7 @@ use warnings;
  
 package Tiezi::Robot;
 
-our $VERSION=0.11;
+our $VERSION=0.12;
 
 use utf8;
 
@@ -103,26 +103,30 @@ sub get_tiezi {
 
     check_skip_floor($_, $o, $tz) for @{$tz->{floors}};
 
-    $self->{packer}->open_packer($tz);
+    my $pk = $self->{packer};
+    my ($w_sub, $write_dst) =  $pk->open_packer($tz, $o);
 
-    $self->{packer}->format_before_toc($tz);
+    $pk->write_packer($w_sub, $pk->format_before_toc($tz));
+$pk->write_packer($w_sub, 
+    $pk->format_toc($tz) )
+    if($o->{with_toc});
 
-    $self->{packer}->format_toc($tz) if($o->{with_toc});
-
-    $self->{packer}->format_after_toc($tz);
-
-    $self->{packer}->format_before_floor($tz);
+$pk->write_packer($w_sub, 
+    $pk->format_before_floor($tz));
 
     for my $i (0 .. $#{$tz->{floors}}){
         my $d = $tz->{floors}[$i];
         next unless ($d);
 
-        $self->{packer}->format_floor( $d, $i+1 );
+$pk->write_packer($w_sub, 
+        $pk->format_floor( $d, $i+1 ));
     } ## end for my $i ( 1 .. $tz...)
 
-    $self->{packer}->format_after_floor($tz);
 
-    $self->{packer}->close_packer();
+$pk->write_packer($w_sub, 
+    $pk->format_after_floor($tz));
+
+    return $write_dst;
 }
 
 sub check_skip_floor {
