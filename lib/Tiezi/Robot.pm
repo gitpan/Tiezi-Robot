@@ -36,7 +36,7 @@ use warnings;
  
 package Tiezi::Robot;
 
-our $VERSION=0.12;
+our $VERSION=0.13;
 
 use utf8;
 
@@ -138,7 +138,11 @@ sub check_skip_floor {
 sub is_wordnum_overflow {
     my ( $floor, $o ) = @_;
     return 1 unless($o->{min_word_num});
-    my $n = length( $floor->{content} );
+
+    my $c = $floor->{content};
+    $c=~s/<[^>]+>//sg;
+    my $n = length( $c );
+
     return 1 if ( $n >= $o->{min_word_num} );
     return;
 }
