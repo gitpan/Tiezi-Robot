@@ -1,54 +1,5 @@
 #!/usr/bin/perl 
 
-=pod
-
-=encoding utf8
-
-=head1 DESC
-
-    TERM下面选择下载贴子
-
-=head1 EXAMPLE
-
-    tiezi_to_any.pl -b "http://bbs.jjwxc.net/showmsg.php?board=153&id=57" -m 1 -t HTML
-
-    tiezi_to_any.pl -s HJJ -b 153 -q 主题贴发贴人 -v 定柔 -m 1
-    
-=head1 USAGE
-
-    tiezi_to_any.pl -b [board_url] -m [select_menu_or_not] -t [packer_type]
-
-    tiezi_to_any.pl -s [site] -b [board_url/board_num] -q [query_keyword] -v [query_value] -m [select_menu_or_not] -t [packer_type]
-
-=head1 OPTIONS
-
-    -b : 版块URL
-
-    -s : 指定查询的站点
-    -q : 查询的类型
-    -v : 查询的关键字
-
-    -m : 是否输出贴子选择菜单
-
-    -t : 贴子保存类型，例如HTML/TXT
-
-
-    -M : 列表取 top n 页的贴子
-
-    -N : 列表取 top n 个贴子
-
-    -P : 贴子内容取 top n 页
-
-    -F : 贴子取 top n 楼
-
-    -W : 跟贴至少要 n 个字
-
-    -U : 只看楼主(默认是取出所有楼层，不只楼主)
-
-    -T : 生成的贴子不加楼层目录(默认是加楼层目录)
-
-=cut
-
 use strict;
 use warnings;
 use utf8;

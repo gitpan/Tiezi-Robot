@@ -6,5 +6,8 @@ README
 README.md
 bin/tiezi_to_any.pl
 bin/tiezi_to_html.pl
+bin/tiezi_to_txt.pl
 dist.ini
+doc/teizi_to_html.pod
+doc/tiezi_to_any.pod
 lib/Tiezi/Robot.pm

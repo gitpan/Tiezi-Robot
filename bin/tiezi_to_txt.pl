@@ -1,5 +1,5 @@
 #!/usr/bin/perl 
-# ABSTRACT: 下载帖子，存成html
+# ABSTRACT: 下载帖子，存成txt
 
 use strict;
 use warnings;
@@ -21,11 +21,11 @@ getopt( 'sufPFWUT', \%OPT );
 
 my $tiezi_url = $OPT{u};
 
-print "\rget tiezi to html : $tiezi_url";
+print "\rget tiezi to txt : $tiezi_url";
 
 my $xs = Tiezi::Robot->new();
 $xs->set_parser($OPT{s} || $tiezi_url) ;
-$xs->set_packer('HTML');
+$xs->set_packer('TXT');
 my $o = { 
         'with_toc' => $OPT{T} // 1, 
         'only_poster' => $OPT{U} // undef, 

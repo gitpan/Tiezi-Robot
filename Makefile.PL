@@ -18,6 +18,7 @@ my %WriteMakefileArgs = (
   "DISTNAME" => "Tiezi-Robot",
   "EXE_FILES" => [
     "bin/tiezi_to_any.pl",
+    "bin/tiezi_to_txt.pl",
     "bin/tiezi_to_html.pl"
   ],
   "LICENSE" => "perl",
@@ -32,7 +33,7 @@ my %WriteMakefileArgs = (
     "Tiezi::Robot::Parser" => 0
   },
   "TEST_REQUIRES" => {},
-  "VERSION" => "0.13",
+  "VERSION" => "0.14",
   "test" => {
     "TESTS" => ""
   }
