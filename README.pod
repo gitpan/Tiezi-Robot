@@ -1,0 +1,66 @@
+=pod
+
+=encoding utf8
+
+=head1 NAME
+
+L<Tiezi::Robot> - 贴子下载器
+
+=head2 支持站点
+
+=item *
+
+HJJ : 红晋江 http://bbs.jjwxc.net
+
+=over
+
+=head1 例子
+
+    #取出指定贴子，只看楼主，且跟贴内容不能少于100字 
+
+    get_tiezi.pl -u "http://bbs.jjwxc.net/showmsg.php?board=153&id=57" -U 1 -C 100
+
+    #按版块取出贴子URL信息，超出50贴或超出3页就停止
+
+    tiezi_to_any.pl -b "http://bbs.jjwxc.net/board.php?board=153&page=1" -t 50 -p 3 
+    
+    #在红晋江 第 153 版块 查询主题 为 迷侠 的贴子
+
+    tiezi_to_any.pl -s HJJ -b 153 -q 贴子主题 -v 迷侠 -m 1 -t HTML
+
+=head1 用法
+    
+    get_tiezi.pl -u [tiezi_url] -t [packer_type] -U [only_poster] -C [min_word_num] 
+
+    tiezi_to_any.pl -b [board_url] -m [select_menu_or_not] -t [packer_type]
+
+    tiezi_to_any.pl -s [site] -b [board_url/board_num] -q [query_keyword] -v [query_value] -m [select_menu_or_not] -t [packer_type]
+
+=head2 参数
+
+    -b : 版块URL
+
+    -s : 指定查询的站点
+    -q : 查询的类型
+    -v : 查询的关键字
+
+    -m : 是否输出贴子选择菜单
+
+    -t : 贴子保存类型，例如html/txt
+
+
+    -M : 列表取 top n 页的贴子
+
+    -N : 列表取 top n 个贴子
+
+    -P : 贴子内容取 top n 页
+
+    -F : 贴子取 top n 楼
+
+    -W : 跟贴至少要 n 个字
+
+    -U : 只看楼主(默认是取出所有楼层，不只楼主)
+
+    -T : 生成的贴子不加楼层目录(默认是加楼层目录)
+    
+=cut
