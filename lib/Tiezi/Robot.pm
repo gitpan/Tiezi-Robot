@@ -1,7 +1,7 @@
 # ABSTRACT: 贴子下载器
 package Tiezi::Robot;
 
-our $VERSION = 0.15;
+our $VERSION = 0.16;
 
 use strict;
 use warnings;
@@ -12,6 +12,7 @@ use Tiezi::Robot::Parser;
 use Tiezi::Robot::Packer;
 
 use Encode;
+use Encode::Locale;
 use Term::Menus;
 
 sub new {
@@ -65,12 +66,17 @@ sub format_tiezi_output {
 
 sub format_default_filename {
     my ( $self, $tz ) = @_;
-    return "$tz->{topic}{name}-$tz->{topic}{title}.".$self->{packer}->suffix();
+    my $f ="$tz->{topic}{name}-$tz->{topic}{title}.".$self->{packer}->suffix(); 
+    return encode(locale => $f);
 }
 
 sub check_skip_floors {
-    my ( $tz, $o ) = @_;
+    my ($self,  $tz, $o ) = @_;
+
+    $self->{parser}->calc_content_wordnum($tz->{topic});
+
     for my $d ( @{ $tz->{floors} } ) {
+        $self->{parser}->calc_content_wordnum($d);
         next
           if (  is_poster_floor( $d, $o, $tz )
             and is_wordnum_overflow( $d, $o ) );
@@ -123,17 +129,20 @@ sub is_floor_overflow {
     return 1;
 }
 
-sub is_page_overflow {
-    my ( $i, $o ) = @_;
-    return unless ( $o->{max_page_num} );
-    return if ( $i < $o->{max_page_num} );
-    return 1;
+sub trim_page_overflow {
+    my ($self, $arr, $o) = @_;
+    return $arr unless ( $o->{max_page_num} );
+
+    my $max_id = $o->{max_page_num} - 2;
+    return $arr unless ($max_id>=0);
+
+    return [ @{$arr}[ 0 .. $max_id ] ];
 }
 
 sub get_tiezi_ref {
     my ( $self, $url, %o ) = @_;
     my $tz = $self->get_tiezi_raw( $url, \%o );
-    check_skip_floors( $tz, \%o );
+    $self->check_skip_floors( $tz, \%o );
     return $tz;
 }
 
@@ -157,16 +166,13 @@ sub get_tiezi_raw {
     my $result_urls_ref = $self->{parser}->parse_tiezi_urls($html_ref);
     return \%result unless ( defined $result_urls_ref );
 
-    my $page_num = 2;
-    for my $u (@$result_urls_ref) {
-        return \%result if ( is_page_overflow( $page_num, $o ) );
+    my $urls = $self->trim_page_overflow($result_urls_ref, $o);
+    for my $u (@$urls) {
         return \%result if ( is_floor_overflow( $result{floors}, $o ) );
 
         my $h = $self->{browser}->request_url($u);
         my $r = $self->{parser}->parse_tiezi_floors($h);
         push @{ $result{floors} }, @$r;
-
-        $page_num++;
     }
 
     return \%result;
@@ -190,16 +196,13 @@ sub get_board_ref {
     my $result_urls_ref = $self->{parser}->parse_board_urls($html_ref);
     return \%result unless ( defined $result_urls_ref );
 
-    my $page_num = 2;
-    for my $u (@$result_urls_ref) {
-        return \%result if ( is_page_overflow( $page_num, $o ) );
+    my $urls = $self->trim_page_overflow($result_urls_ref, $o);
+    for my $u (@$urls) {
         return \%result if ( is_tiezi_overflow( $result{tiezis}, $o ) );
         print "board : $u\n";
         my $h = $self->{browser}->request_url($u);
         my $r = $self->{parser}->parse_board_tiezis($h);
         push @{ $result{tiezis} }, @$r;
-
-        $page_num++;
     }
 
     return \%result;
@@ -220,16 +223,14 @@ sub get_query_ref {
     my $result_urls_ref = $self->{parser}->parse_query_result_urls($html_ref);
     return \%result unless ( defined $result_urls_ref );
 
-    my $page_num = 2;
-    for my $url (@$result_urls_ref) {
+    my $urls = $self->trim_page_overflow($result_urls_ref, \%opt);
+    for my $url (@$urls) {
         return \%result if ( is_tiezi_overflow( $result{tiezis}, \%opt ) );
-        return \%result if ( is_page_overflow( $page_num, \%opt ) );
 
         my $h = $self->{browser}->request_url($url);
         my $r = $self->{parser}->parse_query($h);
         push @{ $result{tiezis} }, @$r;
 
-        $page_num++;
     }
 
     return \%result;

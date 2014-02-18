@@ -8,11 +8,13 @@ L<Tiezi::Robot> - 贴子下载器
 
 =head2 支持站点
 
+=over
+
 =item *
 
 HJJ : 红晋江 http://bbs.jjwxc.net
 
-=over
+=back
 
 =head1 例子
 
